@@ -1,18 +1,16 @@
 import numpy as np
 
+from models.initializers import random_init, xavier_init, he_init
+
 
 class DenseLayer:
-    def __init__(self, input_size, output_size, activation_fn=None):
+    def __init__(self, input_size, output_size, activation_fn=None, initializer=random_init):
         self.activation_fn = activation_fn
 
         self.inputs = None
         self.outputs = None
 
-        # Xavier initialization
-        self.weights = np.random.randn(input_size, output_size) * np.sqrt(2 / (input_size + output_size))
-
-        # # Random initialization
-        # self.weights = np.random.randn(input_size, output_size) * 0.01
+        self.weights = initializer(input_size, output_size)
         self.biases = np.zeros((1, output_size))
 
     def forward(self, x):
@@ -24,7 +22,10 @@ class DenseLayer:
         return self.outputs
 
     def backward(self, output_error, learning_rate):
-        d_activation = self.activation_fn.backward(output_error, learning_rate) if self.activation_fn else output_error
+        if self.activation_fn and hasattr(self.activation_fn, 'backward'):
+            d_activation = self.activation_fn.backward(output_error, learning_rate)
+        else:
+            d_activation = output_error
 
         input_error = np.dot(d_activation, self.weights.T)
 

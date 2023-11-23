@@ -14,14 +14,12 @@ class MeanSquaredError:
 class CrossEntropyLoss:
     @staticmethod
     def forward(predictions, targets):
-        samples = len(predictions)
-        predictions_clipped = np.clip(predictions, 1e-7, 1 - 1e-7)
-        correct_confidences = predictions_clipped[range(samples), targets]
-        negative_log_likelihoods = -np.log(correct_confidences)
-        return np.mean(negative_log_likelihoods)
+        if len(targets.shape) == 1:
+            targets = np.eye(predictions.shape[1])[targets]
+        return -np.sum(targets * np.log(predictions + 1e-15)) / targets.shape[0]
 
     @staticmethod
     def backward(predictions, targets):
-        samples = len(predictions)
-        predictions[range(samples), targets] -= 1
-        return predictions / samples
+        if len(targets.shape) == 1:
+            targets = np.eye(predictions.shape[1])[targets]
+        return predictions - targets

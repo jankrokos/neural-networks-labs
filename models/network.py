@@ -1,3 +1,5 @@
+import numpy as np
+
 from utils import create_mini_batches
 
 
@@ -29,5 +31,11 @@ class NeuralNetwork:
                 for layer in reversed(self.layers):
                     output_error = layer.backward(output_error, learning_rate)
 
-            if epoch % 250 == 0:
-                print(f'Epoch: {epoch + 1}, Loss: {loss:.3f}')
+            print(f'Epoch: {epoch + 1}, Loss: {loss:.3f}')
+
+    def evaluate(self, x_test, y_test):
+        output = self.forward(x_test)
+        predictions = np.argmax(output, axis=1)
+        labels = np.argmax(y_test, axis=1)
+        accuracy = np.mean(predictions == labels)
+        print(f'Accuracy: {(accuracy * 100):.2f}%')

@@ -4,8 +4,9 @@ from models.initializers import random_init, xavier_init, he_init
 
 
 class DenseLayer:
-    def __init__(self, input_size, output_size, activation_fn=None, initializer=random_init):
+    def __init__(self, input_size, output_size, activation_fn=None, initializer=random_init, l2_reg=0.0):
         self.activation_fn = activation_fn
+        self.l2_reg = l2_reg
 
         self.inputs = None
         self.outputs = None
@@ -32,7 +33,12 @@ class DenseLayer:
         weights_error = np.dot(self.inputs.T, d_activation)
         biases_error = np.sum(d_activation, axis=0, keepdims=True)
 
+        l2_penalty = 0
+        if self.l2_reg > 0:
+            l2_penalty = self.l2_reg * np.sum(self.weights ** 2)
+            weights_error += l2_penalty * self.weights
+
         self.weights -= learning_rate * weights_error
         self.biases -= learning_rate * biases_error
 
-        return input_error
+        return input_error, l2_penalty

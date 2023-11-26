@@ -6,6 +6,7 @@ from utils import create_mini_batches
 class NeuralNetwork:
     def __init__(self):
         self.layers = []
+        self.losses = []
 
     def add_layer(self, layer):
         self.layers.append(layer)
@@ -16,10 +17,12 @@ class NeuralNetwork:
         return x
 
     def train(self, x_train, y_train, epochs, learning_rate, loss_function, batch_size):
+        loss = None
         for epoch in range(epochs):
 
             mini_batches = create_mini_batches(x_train, y_train, batch_size)
 
+            total_l2_penalty = 0
             for mini_batch in mini_batches:
                 x_mini, y_mini = mini_batch
 
@@ -29,9 +32,12 @@ class NeuralNetwork:
 
                 output_error = loss_function.backward(output, y_mini)
                 for layer in reversed(self.layers):
-                    output_error = layer.backward(output_error, learning_rate)
+                    output_error, l2_penalty = layer.backward(output_error, learning_rate)
+                    total_l2_penalty += l2_penalty
 
+            loss += total_l2_penalty / (2 * x_train.shape[0])
             print(f'Epoch: {epoch + 1}, Loss: {loss:.3f}')
+            self.losses.append(loss)
 
     def evaluate(self, x_test, y_test):
         output = self.forward(x_test)

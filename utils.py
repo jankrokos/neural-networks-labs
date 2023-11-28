@@ -6,20 +6,14 @@ from scipy.ndimage import rotate
 
 def create_mini_batches(x, y, batch_size):
     mini_batches = []
-    data = np.hstack((x, y))
-    np.random.shuffle(data)
-    n_mini_batches = data.shape[0] // batch_size
+    data_size = x.shape[0]
+    indices = np.arange(data_size)
+    np.random.shuffle(indices)
 
-    for i in range(n_mini_batches):
-        mini_batch = data[i * batch_size:(i + 1) * batch_size, :]
-        x_mini = mini_batch[:, :-y.shape[1]]
-        y_mini = mini_batch[:, -y.shape[1]:]
-        mini_batches.append((x_mini, y_mini))
-
-    if data.shape[0] % batch_size != 0:
-        mini_batch = data[n_mini_batches * batch_size:data.shape[0]]
-        x_mini = mini_batch[:, :-y.shape[1]]
-        y_mini = mini_batch[:, -y.shape[1]:]
+    for i in range(0, data_size, batch_size):
+        batch_indices = indices[i:i + batch_size]
+        x_mini = x[batch_indices]
+        y_mini = y[batch_indices]
         mini_batches.append((x_mini, y_mini))
 
     return mini_batches
